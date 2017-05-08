@@ -1,0 +1,95 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.firebase.firebase-crash'
+apply plugin: 'io.fabric'
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
+apply plugin: 'org.greenrobot.greendao'
+android {
+    compileSdkVersion rootProject.ext.androidCompileSdkVersion
+    buildToolsVersion rootProject.ext.androidBuildToolsVersion
+    dexOptions {
+        jumboMode true
+    }
+    defaultConfig {
+        applicationId rootProject.ext.androidApplicationId
+        minSdkVersion rootProject.ext.androidMinSdkVersion
+        targetSdkVersion rootProject.ext.androidTargetSdkVersion
+        versionCode rootProject.ext.androidVersionCode
+        versionName rootProject.ext.androidVersionName
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            aaptOptions.cruncherEnabled = false;
+            aaptOptions.useNewCruncher = false;
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+dependencies {
+    def presentationDependencies = rootProject.ext.presentationDependencies
+    def presentationTestDependencies = rootProject.ext.presentationTestDependencies
+
+    compile presentationDependencies.retrofit2ConverterGson
+    compile(presentationDependencies.autoscrollViewpager) {
+        exclude module: 'support-v4'
+    }
+    compile(presentationDependencies.twitterSdk) {
+        transitive = true;
+    }
+    compile presentationDependencies.appCompat
+    compile presentationDependencies.customTabs
+    compile presentationDependencies.design
+    compile presentationDependencies.cardView
+    compile presentationDependencies.recyclerView
+    compile presentationDependencies.circleImageView
+    compile presentationDependencies.butterKnife
+    compile presentationDependencies.eventBus
+    compile presentationDependencies.recyclerViewAnimators
+    compile presentationDependencies.circleProgressView
+    compile presentationDependencies.floatingActionButton
+    compile presentationDependencies.roundCornerProgressBar
+    compile presentationDependencies.greenDAO
+    compile presentationDependencies.stetho
+    compile presentationDependencies.facebookSdk
+    compile presentationDependencies.materialDateTimePicker
+    compile presentationDependencies.glide
+    compile presentationDependencies.textdrawable
+    compile presentationDependencies.androidImageCropper
+    compile presentationDependencies.retrofit2
+    compile presentationDependencies.apmemLayouts
+    compile presentationDependencies.firebaseAds
+    compile presentationDependencies.playServiceAuth
+    compile presentationDependencies.appintro
+    compile presentationDependencies.showcaseview
+    compile presentationDependencies.firebaseCrash
+    compile presentationDependencies.firebaseCore
+    compile presentationDependencies.playServicesAnalytics
+    compile presentationDependencies.firebaseAppindexing
+
+    annotationProcessor presentationDependencies.butterknifeCompiler
+
+    testCompile presentationTestDependencies.junit
+}
+greendao {
+    schemaVersion 1
+    daoPackage 'com.heaton.funnyvote.database'
+    targetGenDir 'src/main/java'
+}
+apply plugin: 'com.google.gms.google-services'

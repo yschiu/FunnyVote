@@ -1,0 +1,88 @@
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+ext {
+    androidBuildToolsVersion        = "25.0.2"
+    androidMinSdkVersion            = 21
+    androidTargetSdkVersion         = 23
+    androidCompileSdkVersion        = 25
+
+    //Libraries
+    autoscrollViewpagerVersion      = "1.1.2"
+    twitterSdkVersion               = "2.3.1"
+    appCompatVersion                = "25.2.0"
+    customTabsVersion               = "25.2.0"
+    designVersion                   = "25.2.0"
+    cardViewVersion                 = "25.2.0"
+    recyclerViewVersion             = "25.2.0"
+    circleImageViewVersion          = "2.1.0"
+    butterKnifeVersion              = "8.5.1"
+    eventBusVersion                 = "3.0.0"
+    recyclerViewAnimatorsVersion    = "2.2.4"
+    circleProgressViewVersion       = "1.2.9.1"
+    floatingActionButtonVersion     = "1.10.1"
+    roundCornerProgressBarVersion   = "2.0.3"
+    greenDAOVersion                 = "3.2.0"
+    stethoVersion                   = "1.4.2"
+    facebookSdkVersion              = "[4,5)"
+    materialDateTimePickerVersion   = "2.5.0"
+    glideVersion                    = "3.7.0"
+    textdrawableVersion             = "1.0.1"
+    androidImageCropperVersion      = "2.3.+"
+    retrofit2Version                = "2.1.0"
+    retrofit2ConverterGsonVersion   = "2.1.0"
+    apmemLayoutsVersion             = "1.10"
+    firebaseAdsVersion              = "10.2.0"
+    playServiceAuthVersion          = "10.2.0"
+    appintroVersion                 = "4.0.0"
+    butterknifeCompilerVersion      = "8.5.1"
+    showcaseviewVersion             = "5.4.3"
+    firebaseCrashVersion            = "10.2.0"
+    firebaseCoreVersion             = "10.2.0"
+    playServicesAnalyticsVersion    = "10.2.0"
+    firebaseAppindexingVersion      = "10.2.0"
+    junitVersion                    = "4.12"
+
+    presentationDependencies = [
+        autoscrollViewpager         : "cn.trinea.android.view.autoscrollviewpager:android-auto-scroll-view-pager:${autoscrollViewpagerVersion}",
+        twitterSdk                  : "com.twitter.sdk.android:twitter:${twitterSdkVersion}@aar",
+        appCompat                   : "com.android.support:appcompat-v7:${appCompatVersion}",
+        customTabs                  : "com.android.support:customtabs:${customTabsVersion}",
+        design                      : "com.android.support:design:${designVersion}",
+        cardView                    : "com.android.support:cardview-v7:${cardViewVersion}",
+        recyclerView				:"com.android.support:recyclerview-v7:${recyclerViewVersion}",
+        circleImageView				:"de.hdodenhof:circleimageview:${circleImageViewVersion}",
+        butterKnife				    :"com.jakewharton:butterknife:${butterKnifeVersion}",
+        eventBus				    :"org.greenrobot:eventbus:${eventBusVersion}",
+        recyclerViewAnimators		:"jp.wasabeef:recyclerview-animators:${recyclerViewAnimatorsVersion}",
+        circleProgressView			:"com.github.jakob-grabner:Circle-Progress-View:v${circleProgressViewVersion}",
+        floatingActionButton		:"com.getbase:floatingactionbutton:${floatingActionButtonVersion}",
+        roundCornerProgressBar		:"com.akexorcist:RoundCornerProgressBar:${roundCornerProgressBarVersion}",
+        greenDAO				    :"org.greenrobot:greendao:${greenDAOVersion}",
+        stetho				        :"com.facebook.stetho:stetho:${stethoVersion}",
+        facebookSdk				    :"com.facebook.android:facebook-android-sdk:${facebookSdkVersion}",
+        materialDateTimePicker		:"com.wdullaer:materialdatetimepicker:${materialDateTimePickerVersion}",
+        glide				        :"com.github.bumptech.glide:glide:${glideVersion}",
+        textdrawable				:"com.amulyakhare:com.amulyakhare.textdrawable:${textdrawableVersion}",
+        androidImageCropper			:"com.theartofdev.edmodo:android-image-cropper:${androidImageCropperVersion}",
+        retrofit2				    :"com.squareup.retrofit2:retrofit:${retrofit2Version}",
+        retrofit2ConverterGson		:"com.squareup.retrofit2:converter-gson:${retrofit2ConverterGsonVersion}",
+        apmemLayouts				:"org.apmem.tools:layouts:${apmemLayoutsVersion}@aar",
+        firebaseAds				    :"com.google.firebase:firebase-ads:${firebaseAdsVersion}",
+        playServiceAuth				:"com.google.android.gms:play-services-auth:${playServiceAuthVersion}",
+        appintro				    :"com.github.paolorotolo:appintro:${appintroVersion}",
+        butterknifeCompiler			:"com.jakewharton:butterknife-compiler:${butterknifeCompilerVersion}",
+        showcaseview				:"com.github.amlcurran.showcaseview:library:${showcaseviewVersion}",
+        firebaseCrash				:"com.google.firebase:firebase-crash:${firebaseCrashVersion}",
+        firebaseCore				:"com.google.firebase:firebase-core:${firebaseCoreVersion}",
+        playServicesAnalytics		:"com.google.android.gms:play-services-analytics:${playServicesAnalyticsVersion}",
+        firebaseAppindexing			:"com.google.firebase:firebase-appindexing:${firebaseAppindexingVersion}"
+    ]
+
+    presentationTestDependencies = [
+        junit				        :"junit:junit:${junitVersion}"
+    ]
+}

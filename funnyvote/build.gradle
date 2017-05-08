@@ -1,4 +1,4 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply from: 'buildsystem/dependencies.gradle'
 
 buildscript {
     repositories {
@@ -26,8 +26,9 @@ allprojects {
             url 'http://dl.bintray.com/amulyakhare/maven'
         }
     }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
+    ext {
+        androidApplicationId = "com.heaton.funnyvote"
+        androidVersionCode = 6
+        androidVersionName = "170501"
+    }
 }
