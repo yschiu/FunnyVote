@@ -19,5 +19,5 @@ android:
     - addon-google_apis-google-19
 
 script:
-  -cd funnyvote
-  -./gradlew build connectedCheck
+  - cd funnyvote
+  - ./gradlew build connectedCheck
