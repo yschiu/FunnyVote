@@ -18,4 +18,5 @@ android:
     - extra-android-m2repository
     - addon-google_apis-google-19
 
-  before_install: cd funnyvote
+  script:
+    - ./funnyvote/gradlew build connectedCheck
