@@ -21,4 +21,4 @@ android:
 
 script:
   - cd funnyvote
-  - ./gradlew build
+  - ./gradlew build test
