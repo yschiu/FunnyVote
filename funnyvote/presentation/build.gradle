@@ -8,9 +8,9 @@ buildscript {
     }
 }
 apply plugin: 'com.android.application'
+apply plugin: 'jacoco-android'
 apply plugin: 'com.google.firebase.firebase-crash'
 apply plugin: 'io.fabric'
-apply plugin: 'jacoco-android'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -88,6 +88,7 @@ dependencies {
     annotationProcessor presentationDependencies.butterknifeCompiler
 
     testCompile presentationTestDependencies.junit
+    testCompile 'org.mockito:mockito-core:1.10.19'
 }
 greendao {
     schemaVersion 1
