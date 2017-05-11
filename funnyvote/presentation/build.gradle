@@ -45,50 +45,49 @@ android {
     }
 }
 dependencies {
-    def presentationDependencies = rootProject.ext.presentationDependencies
-    def presentationTestDependencies = rootProject.ext.presentationTestDependencies
+    def dependencies = rootProject.ext.dependencies
 
-    compile presentationDependencies.retrofit2ConverterGson
-    compile(presentationDependencies.autoscrollViewpager) {
+    compile dependencies.retrofit2ConverterGson
+    compile(dependencies.autoscrollViewpager) {
         exclude module: 'support-v4'
     }
-    compile(presentationDependencies.twitterSdk) {
+    compile(dependencies.twitterSdk) {
         transitive = true;
     }
-    compile presentationDependencies.appCompat
-    compile presentationDependencies.customTabs
-    compile presentationDependencies.design
-    compile presentationDependencies.cardView
-    compile presentationDependencies.recyclerView
-    compile presentationDependencies.circleImageView
-    compile presentationDependencies.butterKnife
-    compile presentationDependencies.eventBus
-    compile presentationDependencies.recyclerViewAnimators
-    compile presentationDependencies.circleProgressView
-    compile presentationDependencies.floatingActionButton
-    compile presentationDependencies.roundCornerProgressBar
-    compile presentationDependencies.greenDAO
-    compile presentationDependencies.stetho
-    compile presentationDependencies.facebookSdk
-    compile presentationDependencies.materialDateTimePicker
-    compile presentationDependencies.glide
-    compile presentationDependencies.textdrawable
-    compile presentationDependencies.androidImageCropper
-    compile presentationDependencies.retrofit2
-    compile presentationDependencies.apmemLayouts
-    compile presentationDependencies.firebaseAds
-    compile presentationDependencies.playServiceAuth
-    compile presentationDependencies.appintro
-    compile presentationDependencies.showcaseview
-    compile presentationDependencies.firebaseCrash
-    compile presentationDependencies.firebaseCore
-    compile presentationDependencies.playServicesAnalytics
-    compile presentationDependencies.firebaseAppindexing
+    compile dependencies.appCompat
+    compile dependencies.customTabs
+    compile dependencies.design
+    compile dependencies.cardView
+    compile dependencies.recyclerView
+    compile dependencies.circleImageView
+    compile dependencies.butterKnife
+    compile dependencies.eventBus
+    compile dependencies.recyclerViewAnimators
+    compile dependencies.circleProgressView
+    compile dependencies.floatingActionButton
+    compile dependencies.roundCornerProgressBar
+    compile dependencies.greenDAO
+    compile dependencies.stetho
+    compile dependencies.facebookSdk
+    compile dependencies.materialDateTimePicker
+    compile dependencies.glide
+    compile dependencies.textdrawable
+    compile dependencies.androidImageCropper
+    compile dependencies.retrofit2
+    compile dependencies.apmemLayouts
+    compile dependencies.firebaseAds
+    compile dependencies.playServiceAuth
+    compile dependencies.appintro
+    compile dependencies.showcaseview
+    compile dependencies.firebaseCrash
+    compile dependencies.firebaseCore
+    compile dependencies.playServicesAnalytics
+    compile dependencies.firebaseAppindexing
 
-    annotationProcessor presentationDependencies.butterknifeCompiler
+    annotationProcessor dependencies.butterknifeCompiler
 
-    testCompile presentationTestDependencies.junit
-    testCompile 'org.mockito:mockito-core:1.10.19'
+    testCompile dependencies.junit
+    testCompile dependencies.mockito
 }
 greendao {
     schemaVersion 1
