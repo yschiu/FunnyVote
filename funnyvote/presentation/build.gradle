@@ -83,6 +83,7 @@ dependencies {
     compile dependencies.firebaseCore
     compile dependencies.playServicesAnalytics
     compile dependencies.firebaseAppindexing
+    compile dependencies.mosby
 
     annotationProcessor dependencies.butterknifeCompiler
 
