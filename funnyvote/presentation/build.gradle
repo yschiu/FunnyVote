@@ -84,6 +84,8 @@ dependencies {
     compile dependencies.playServicesAnalytics
     compile dependencies.firebaseAppindexing
     compile dependencies.mosby
+    compile dependencies.rxandroid
+    compile dependencies.rxjava
 
     annotationProcessor dependencies.butterknifeCompiler
 

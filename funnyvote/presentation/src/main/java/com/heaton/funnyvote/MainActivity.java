@@ -2,9 +2,10 @@ package com.heaton.funnyvote;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.annotation.ColorRes;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -13,7 +14,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.transition.Slide;
@@ -22,17 +22,14 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.hannesdorfmann.mosby3.mvp.MvpActivity;
 import com.heaton.funnyvote.analytics.AnalyzticsTag;
-import com.heaton.funnyvote.data.user.UserManager;
-import com.heaton.funnyvote.database.User;
 import com.heaton.funnyvote.eventbus.EventBusManager;
 import com.heaton.funnyvote.notification.VoteNotificationManager;
 import com.heaton.funnyvote.ui.about.AboutFragment;
@@ -47,12 +44,18 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
-    public static String TAG = MainPageTabFragment.class.getSimpleName();
+public class MainActivity extends MvpActivity<MainPageView, MainPagePresenter> implements MainPageView {
+    private static final String TAG = MainPageTabFragment.class.getSimpleName();
     private static final int ANIM_DURATION_TOOLBAR = 300;
+    private static final int SWITCH_PAGE_ANIMATION_DURATION = 400;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
     private Toolbar toolbar;
@@ -62,97 +65,117 @@ public class MainActivity extends AppCompatActivity {
     boolean doubleBackToExitPressedOnce = false;
     private SearchView searchView;
     private String searchKeyword;
-    public static boolean ENABLE_ADMOB = true;
     private AdView adView;
     private Tracker tracker;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
-        tracker = application.getDefaultTracker();
-        getSupportFragmentManager().beginTransaction().replace(R.id.frame_content
-                , new MainPageFragment()).commit();
         toolbar = (Toolbar) findViewById(R.id.toolbarMain);
         adView = (AdView) findViewById(R.id.adView);
-        toolbar.setTitle(getString(R.string.drawer_home));
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+
+        FunnyVoteApplication application = (FunnyVoteApplication) getApplication();
+        tracker = application.getDefaultTracker();
+
         toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open,
-                R.string.drawer_close);
-        drawerToggle.syncState();
-
-        ENABLE_ADMOB = getResources().getBoolean(R.bool.enable_main_admob);
-
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
-        navigationView.getMenu().getItem(0).setChecked(true);
-        navigationView.getHeaderView(0).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_account).getItemId()) {
-                    switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_account));
-                }
-                drawerLayout.closeDrawers();
-            }
-        });
-        currentPage = R.id.navigation_item_main;
-
-        setupDrawerContent(navigationView);
-        setupDrawerHeader();
+        setupDrawer();
         setUpAdmob();
+        setupHomeFragment();
 
         VoteNotificationManager.getInstance(getApplicationContext()).startNotificationAlarm();
     }
 
+    private void setupHomeFragment() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.frame_content
+                , new MainPageFragment()).commit();
+        setupToolBar(R.string.drawer_home, R.color.primary);
+        currentPage = R.id.navigation_item_main;
+        navigationView.getMenu().getItem(0).setChecked(true);
+    }
+
+    private void setupDrawer() {
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
+                R.string.drawer_open, R.string.drawer_close);
+        drawerToggle.syncState();
+        drawerLayout.addDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                getPresenter().refreshUserProfile();
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+            }
+        });
+
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        if (currentPage != menuItem.getItemId()) {
+                            switch (menuItem.getItemId()) {
+                                case R.id.navigation_item_main:
+                                    getPresenter().gotoHomePage();
+                                    break;
+                                case R.id.navigation_item_create_vote:
+                                    getPresenter().gotoCreateVotePage();
+                                    break;
+                                case R.id.navigation_item_list_my_box:
+                                    getPresenter().gotoMyBoxPage();
+                                    break;
+                                case R.id.navigation_item_search:
+                                    getPresenter().gotoSearchPage(searchKeyword);
+                                    break;
+                                case R.id.navigation_item_account:
+                                    getPresenter().gotoAccountPage();
+                                    break;
+                                case R.id.navigation_item_about:
+                                    getPresenter().gotoAboutPage();
+                                    break;
+                                default:
+
+                            }
+                            currentPage = menuItem.getItemId();
+                            navigationView.setCheckedItem(currentPage);
+                        }
+                        drawerLayout.closeDrawers();
+                        return true;
+                    }
+                });
+        navigationView.getHeaderView(0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getPresenter().gotoAccountPage();
+            }
+        });
+
+    }
+
     private void setUpAdmob() {
-        if (ENABLE_ADMOB) {
+        boolean enableAdmob = getResources().getBoolean(R.bool.enable_main_admob);
+        if (enableAdmob) {
             AdRequest adRequest = new AdRequest.Builder()
                     .build();
             adView.loadAd(adRequest);
         } else {
             adView.setVisibility(View.GONE);
         }
-    }
-
-    private void setupDrawerContent(final NavigationView navigationView) {
-        drawerLayout.addDrawerListener(drawerToggle);
-        drawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                setupDrawerHeader();
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-
-            }
-        });
-        navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        if (currentPage != menuItem.getItemId()) {
-                            switchFragment(menuItem);
-                        }
-                        drawerLayout.closeDrawers();
-                        return true;
-                    }
-                });
-
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -169,29 +192,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        compositeDisposable.dispose();
+        super.onDestroy();
+    }
+
+    @NonNull
+    @Override
+    public MainPagePresenter createPresenter() {
+        return new MainPagePresenter();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
-    }
-
-    private void setupDrawerHeader() {
-        UserManager.getInstance(getApplicationContext()).getUser(new UserManager.GetUserCallback() {
-            @Override
-            public void onResponse(User user) {
-                View header = navigationView.getHeaderView(0);
-                CircleImageView icon = (CircleImageView) header.findViewById(R.id.imgUserIcon);
-                TextView name = (TextView) header.findViewById(R.id.txtUserName);
-                name.setText(user.getUserName());
-                Glide.with(MainActivity.this).load(user.getUserIcon()).dontAnimate()
-                        .override((int) getResources().getDimension(R.dimen.drawer_image_width)
-                                , (int) getResources().getDimension(R.dimen.drawer_image_high))
-                        .placeholder(R.drawable.ic_action_account_circle).into(icon);
-            }
-
-            @Override
-            public void onFailure() {
-            }
-        }, false);
     }
 
     @Override
@@ -200,73 +215,6 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setCheckedItem(currentPage);
     }
 
-    private void switchFragment(final MenuItem menuItem) {
-        final int menuId = menuItem.getItemId();
-        drawerLayout.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Fragment fragment;
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                Slide slide = new Slide();
-                slide.setDuration(400);
-                slide.setSlideEdge(Gravity.RIGHT);
-                if (Build.VERSION.SDK_INT > 21) {
-                    toolbar.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.color_primary));
-                } else {
-                    toolbar.setBackgroundColor(getResources().getColor(R.color.color_primary));
-                }
-                switch (menuId) {
-                    case R.id.navigation_item_main:
-                        currentPage = menuItem.getItemId();
-                        fragment = new MainPageFragment();
-                        fragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, fragment).commit();
-                        toolbar.setTitle(getString(R.string.drawer_home));
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_MAIN);
-                        break;
-                    case R.id.navigation_item_create_vote:
-                        startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
-                        break;
-                    case R.id.navigation_item_list_my_box:
-                        startActivity(new Intent(MainActivity.this, UserActivity.class));
-                        break;
-                    case R.id.navigation_item_search:
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_SEARCH);
-                        currentPage = menuItem.getItemId();
-                        fragment = new SearchFragment();
-                        fragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, fragment).commit();
-                        toolbar.setTitle(R.string.drawer_search);
-                        Bundle argument = new Bundle();
-                        argument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
-                        fragment.setArguments(argument);
-                        break;
-                    case R.id.navigation_item_account:
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_ACCOUNT);
-                        currentPage = menuItem.getItemId();
-                        AccountFragment accountFragment = new AccountFragment();
-                        accountFragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, accountFragment).commit();
-                        int bgColor = ContextCompat.getColor(getApplicationContext(), R.color.md_light_blue_100);
-                        toolbar.setBackgroundColor(bgColor);
-                        toolbar.setTitle(R.string.drawer_account);
-                        break;
-                    case R.id.navigation_item_about:
-                        tracker.setScreenName(AnalyzticsTag.SCREEN_ABOUT);
-                        currentPage = menuItem.getItemId();
-                        AboutFragment aboutFragment = new AboutFragment();
-                        aboutFragment.setEnterTransition(slide);
-                        ft.replace(R.id.frame_content, aboutFragment).commit();
-                        toolbar.setTitle(R.string.drawer_about);
-                        break;
-                }
-                navigationView.setCheckedItem(currentPage);
-                tracker.send(new HitBuilders.ScreenViewBuilder().build());
-            }
-        }, 500);
-    }
-
-
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -274,8 +222,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (currentPage != navigationView.getMenu().getItem(0).getItemId()) {
             currentPage = navigationView.getMenu().getItem(0).getItemId();
-            navigationView.getMenu().getItem(0).setChecked(true);
-            switchFragment(navigationView.getMenu().getItem(0));
+            getPresenter().gotoHomePage();
         } else {
             if (doubleBackToExitPressedOnce) {
                 super.onBackPressed();
@@ -284,13 +231,16 @@ public class MainActivity extends AppCompatActivity {
             this.doubleBackToExitPressedOnce = true;
             Toast.makeText(this, R.string.wall_item_toast_double_click_to_exit, Toast.LENGTH_SHORT).show();
 
-            new Handler().postDelayed(new Runnable() {
-
-                @Override
-                public void run() {
-                    doubleBackToExitPressedOnce = false;
-                }
-            }, 2000);
+            compositeDisposable.add(
+                    Observable.timer(2000, TimeUnit.MILLISECONDS)
+                            .subscribeOn(Schedulers.newThread())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Consumer<Long>() {
+                                @Override
+                                public void accept(@io.reactivex.annotations.NonNull Long aLong) throws Exception {
+                                    doubleBackToExitPressedOnce = false;
+                                }
+                            }));
         }
     }
 
@@ -329,8 +279,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "onQueryTextSubmit:" + query + "  page:" + currentPage
                             + " search page:" + navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId());
                     if (currentPage != navigationView.getMenu().findItem(R.id.navigation_item_search).getItemId()) {
-                        switchFragment(navigationView.getMenu().findItem(R.id.navigation_item_search));
-                        navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
+                        getPresenter().gotoSearchPage(searchKeyword);
                     } else {
                         EventBus.getDefault().post(new EventBusManager.UIControlEvent(
                                 EventBusManager.UIControlEvent.SEARCH_KEYWORD, searchKeyword));
@@ -344,7 +293,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.menu_add) {
-            startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
+            getPresenter().gotoCreateVotePage();
             return true;
         }
 
@@ -358,5 +307,91 @@ public class MainActivity extends AppCompatActivity {
         if (fragment != null) {
             fragment.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public void showHomePage() {
+        Fragment fragment = new MainPageFragment();
+        replaceFragmentWithAnimation(fragment, R.string.drawer_home, R.color.color_primary);
+
+        trackScreenView(AnalyzticsTag.SCREEN_MAIN);
+        navigationView.getMenu().findItem(R.id.navigation_item_main).setChecked(true);
+    }
+
+    @Override
+    public void showMyBoxPage() {
+        startActivity(new Intent(MainActivity.this, UserActivity.class));
+    }
+
+    @Override
+    public void showAccountPage() {
+        Fragment accountFragment = new AccountFragment();
+        replaceFragmentWithAnimation(accountFragment, R.string.drawer_account,
+                R.color.md_light_blue_100);
+
+        trackScreenView(AnalyzticsTag.SCREEN_ACCOUNT);
+        navigationView.getMenu().findItem(R.id.navigation_item_account).setChecked(true);
+    }
+
+    @Override
+    public void showAboutPage() {
+        Fragment aboutFragment = new AboutFragment();
+        replaceFragmentWithAnimation(aboutFragment, R.string.drawer_about, R.color.color_primary);
+
+        trackScreenView(AnalyzticsTag.SCREEN_ABOUT);
+        navigationView.getMenu().findItem(R.id.navigation_item_about).setChecked(true);
+    }
+
+    @Override
+    public void showSearchPage(final String searchKeyword) {
+        Fragment fragment = new SearchFragment();
+        Bundle argument = new Bundle();
+        argument.putString(SearchFragment.KEY_SEARCH_KEYWORD, searchKeyword);
+        fragment.setArguments(argument);
+        replaceFragmentWithAnimation(fragment, R.string.drawer_search, R.color.color_primary);
+
+        trackScreenView(AnalyzticsTag.SCREEN_SEARCH);
+        navigationView.getMenu().findItem(R.id.navigation_item_search).setChecked(true);
+    }
+
+    @Override
+    public void showCreateVotePage() {
+        startActivity(new Intent(MainActivity.this, CreateVoteActivity.class));
+    }
+
+    @Override
+    public void updateUserProfile() {
+
+    }
+
+    private void trackScreenView(String screen) {
+        tracker.setScreenName(screen);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+    }
+
+    private void setupToolBar(@StringRes int title, @ColorRes int backgroundColor) {
+        int color = ContextCompat.getColor(getApplicationContext(), backgroundColor);
+        toolbar.setBackgroundColor(color);
+        toolbar.setTitle(title);
+    }
+
+    private void replaceFragmentWithAnimation(final Fragment fragment, @StringRes final int title,
+                                              @ColorRes final int toolBarBgColor) {
+        compositeDisposable.add(
+                Observable.timer(500, TimeUnit.MILLISECONDS)
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Consumer<Long>() {
+                            @Override
+                            public void accept(@io.reactivex.annotations.NonNull Long aLong) throws Exception {
+                                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                                Slide slide = new Slide();
+                                slide.setDuration(SWITCH_PAGE_ANIMATION_DURATION);
+                                slide.setSlideEdge(Gravity.RIGHT);
+                                fragment.setEnterTransition(slide);
+                                transaction.replace(R.id.frame_content, fragment).commit();
+                                setupToolBar(title, toolBarBgColor);
+                            }
+                        }));
     }
 }
