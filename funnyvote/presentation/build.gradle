@@ -11,6 +11,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.google.firebase.firebase-crash'
 apply plugin: 'io.fabric'
+apply plugin: 'me.tatarka.retrolambda'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
@@ -42,6 +43,10 @@ android {
     }
     lintOptions {
         abortOnError false
+    }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
 }
 dependencies {
@@ -86,8 +91,13 @@ dependencies {
     compile dependencies.mosby
     compile dependencies.rxandroid
     compile dependencies.rxjava
+    compile dependencies.rxbinding2
+    compile dependencies.rxbinding2Design
+    compile dependencies.rxbinding2Support
+    compile dependencies.dagger2
 
     annotationProcessor dependencies.butterknifeCompiler
+    annotationProcessor dependencies.dagger2Compiler
 
     testCompile dependencies.junit
     testCompile dependencies.mockito

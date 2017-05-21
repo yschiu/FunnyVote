@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
+import com.heaton.funnyvote.data.user.di.UserManagerModule;
 import com.heaton.funnyvote.database.DaoMaster;
 import com.heaton.funnyvote.database.DaoSession;
 import com.facebook.FacebookSdk;
@@ -11,6 +12,9 @@ import com.facebook.appevents.AppEventsLogger;
 import com.facebook.stetho.Stetho;
 
 import com.google.android.gms.ads.MobileAds;
+import com.heaton.funnyvote.di.AppModule;
+import com.heaton.funnyvote.di.BaseComponent;
+import com.heaton.funnyvote.di.DaggerBaseComponent;
 import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import io.fabric.sdk.android.Fabric;
@@ -30,6 +34,7 @@ public class FunnyVoteApplication extends Application {
     public static final boolean ENCRYPTED = false;
     private DaoSession daoSession;
     private Tracker tracker;
+    private BaseComponent baseComponent;
 
     @Override
     public void onCreate() {
@@ -43,6 +48,10 @@ public class FunnyVoteApplication extends Application {
         Database db = ENCRYPTED ? helper.getEncryptedWritableDb("super-secret") : helper.getWritableDb();
         daoSession = new DaoMaster(db).newSession(IdentityScopeType.Session);
 
+        baseComponent = DaggerBaseComponent.builder()
+                .appModule(new AppModule(this))
+                .userManagerModule(new UserManagerModule())
+                .build();
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-3940256099942544~3347511713");
     }
     /**
@@ -56,6 +65,10 @@ public class FunnyVoteApplication extends Application {
             tracker = analytics.newTracker(R.xml.global_tracker);
         }
         return tracker;
+    }
+
+    public BaseComponent getBaseComponent() {
+        return baseComponent;
     }
 
     public DaoSession getDaoSession() {

@@ -1,6 +1,7 @@
 package com.heaton.funnyvote;
 
 import com.hannesdorfmann.mosby3.mvp.MvpView;
+import com.heaton.funnyvote.database.User;
 
 public interface MainPageView extends MvpView{
     void showHomePage();
@@ -9,5 +10,5 @@ public interface MainPageView extends MvpView{
     void showAboutPage();
     void showSearchPage(String search);
     void showCreateVotePage();
-    void updateUserProfile();
+    void updateUserProfile(User user);
 }

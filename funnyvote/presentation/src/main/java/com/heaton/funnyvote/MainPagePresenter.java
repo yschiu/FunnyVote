@@ -1,11 +1,33 @@
 package com.heaton.funnyvote;
 
 import com.hannesdorfmann.mosby3.mvp.MvpBasePresenter;
+import com.heaton.funnyvote.data.user.UserManager;
+import com.heaton.funnyvote.database.User;
+
+import javax.inject.Inject;
 
 public class MainPagePresenter extends MvpBasePresenter<MainPageView> {
 
-    public void refreshUserProfile() {
+    UserManager userManager;
 
+    @Inject
+    public MainPagePresenter(UserManager userManager) {
+        this.userManager = userManager;
+    }
+
+    public void refreshUserProfile() {
+        userManager.getUser(new UserManager.GetUserCallback() {
+            @Override
+            public void onResponse(User user) {
+                if (isViewAttached()) {
+                    getView().updateUserProfile(user);
+                }
+            }
+
+            @Override
+            public void onFailure() {
+            }
+        }, false);
     }
 
     public void gotoHomePage() {
