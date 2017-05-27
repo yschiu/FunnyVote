@@ -51,7 +51,8 @@ ext {
             mockito                     : "1.10.19",
             mosby                       : "3.0.4",
             rxbinding2                  : "2.0.0",
-            dagger2                     : "2.10"
+            dagger2                     : "2.10",
+            kotlin                      : "1.1.2-4"
     ]
 
 
@@ -98,6 +99,7 @@ ext {
             rxbinding2Design        : "com.jakewharton.rxbinding2:rxbinding-design:$versions.rxbinding2",
             rxbinding2Support       : "com.jakewharton.rxbinding2:rxbinding-support-v4:$versions.rxbinding2",
             dagger2                 : "com.google.dagger:dagger:$versions.dagger2",
-            dagger2Compiler         : "com.google.dagger:dagger-compiler:$versions.dagger2"
+            dagger2Compiler         : "com.google.dagger:dagger-compiler:$versions.dagger2",
+            kotlin                  : "org.jetbrains.kotlin:kotlin-stdlib-jre7:$versions.kotlin"
     ]
 }

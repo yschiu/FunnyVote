@@ -8,6 +8,7 @@ buildscript {
     }
 }
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 apply plugin: 'jacoco-android'
 apply plugin: 'com.google.firebase.firebase-crash'
 apply plugin: 'io.fabric'
@@ -15,6 +16,7 @@ apply plugin: 'me.tatarka.retrolambda'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }
+    mavenCentral()
 }
 
 apply plugin: 'org.greenrobot.greendao'
@@ -95,6 +97,7 @@ dependencies {
     compile dependencies.rxbinding2Design
     compile dependencies.rxbinding2Support
     compile dependencies.dagger2
+    compile dependencies.kotlin
 
     annotationProcessor dependencies.butterknifeCompiler
     annotationProcessor dependencies.dagger2Compiler

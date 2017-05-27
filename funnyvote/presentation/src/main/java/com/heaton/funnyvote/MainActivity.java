@@ -68,10 +68,11 @@ public class MainActivity extends MvpActivity<MainPageView, MainPagePresenter> i
 
     private int currentPage;
     private SearchView searchView;
-    private String searchKeyword;
+    @NonNull
+    private String searchKeyword = "";
     private AdView adView;
     private Tracker tracker;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    final private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private long backPressedTimestamp;
 
@@ -119,7 +120,7 @@ public class MainActivity extends MvpActivity<MainPageView, MainPagePresenter> i
         drawerLayout.addDrawerListener(drawerToggle);
         getPresenter().refreshUserProfile();
         Disposable drawerOpen = RxDrawerLayout.drawerOpen(drawerLayout, GravityCompat.START)
-                .filter(open -> open == true)
+                .filter(open -> open)
                 .subscribe(open -> getPresenter().refreshUserProfile());
 
         Disposable menuItemSelection = RxNavigationView.itemSelections(navigationView)
@@ -374,7 +375,7 @@ public class MainActivity extends MvpActivity<MainPageView, MainPagePresenter> i
     private void replaceFragmentWithAnimation(final Fragment fragment, @StringRes final int title,
                                               @ColorRes final int toolBarBgColor) {
         Disposable disposable = RxDrawerLayout.drawerOpen(drawerLayout, GravityCompat.START)
-                .filter(open -> open == false)
+                .filter(open -> !open)
                 .take(1)
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
