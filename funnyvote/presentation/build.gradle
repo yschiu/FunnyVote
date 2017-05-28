@@ -98,6 +98,7 @@ dependencies {
     compile dependencies.rxbinding2Support
     compile dependencies.dagger2
     compile dependencies.kotlin
+    compile dependencies.retrofit2RxJavaAdapter
 
     annotationProcessor dependencies.butterknifeCompiler
     annotationProcessor dependencies.dagger2Compiler

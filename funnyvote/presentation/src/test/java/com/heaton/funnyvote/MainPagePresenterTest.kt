@@ -12,18 +12,20 @@ import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 
 class MainPagePresenterTest {
-    @Mock var userManager: UserManager? = null
-    @Mock var view: MainPageView? = null
+    @Mock lateinit var userManager: UserManager
+    @Mock lateinit var view: MainPageView
+    lateinit var presenter: MainPagePresenter
 
     @Before
     fun setup() {
         MockitoAnnotations.initMocks(this)
+
+        presenter = MainPagePresenter(userManager)
+        presenter.attachView(view)
     }
 
     @Test
     fun testGoToHomePage() {
-        val presenter = preparePresenter()
-
         presenter.gotoHomePage()
 
         verify(presenter.view).showHomePage()
@@ -31,8 +33,6 @@ class MainPagePresenterTest {
 
     @Test
     fun testGoToAboutPage() {
-        val presenter = preparePresenter()
-
         presenter.gotoAboutPage()
 
         verify(presenter.view).showAboutPage()
@@ -40,8 +40,6 @@ class MainPagePresenterTest {
 
     @Test
     fun testGoToAccountPage() {
-        val presenter = preparePresenter()
-
         presenter.gotoAccountPage()
 
         verify(presenter.view).showAccountPage()
@@ -49,8 +47,6 @@ class MainPagePresenterTest {
 
     @Test
     fun testGoToCreateVotePage() {
-        val presenter = preparePresenter()
-
         presenter.gotoCreateVotePage()
 
         verify(presenter.view).showCreateVotePage()
@@ -58,8 +54,6 @@ class MainPagePresenterTest {
 
     @Test
     fun testGoToMyBoxPage() {
-        val presenter = preparePresenter()
-
         presenter.gotoMyBoxPage()
 
         verify(presenter.view).showMyBoxPage()
@@ -67,8 +61,6 @@ class MainPagePresenterTest {
 
     @Test
     fun testGoToMySearchPage() {
-        val presenter = preparePresenter()
-
         presenter.gotoSearchPage("")
 
         verify(presenter.view).showSearchPage(anyString())
@@ -76,23 +68,16 @@ class MainPagePresenterTest {
 
     @Test
     fun testRefreshUserProfile() {
-        val presenter = preparePresenter()
         val captor: ArgumentCaptor<UserManager.GetUserCallback> =
                 ArgumentCaptor.forClass(UserManager.GetUserCallback::class.java)
         val mockUser: User = mock(User::class.java)
 
         presenter.refreshUserProfile()
 
-        verify(userManager!!).getUser(captor.capture(), eq(false))
+        verify(userManager).getUser(captor.capture(), eq(false))
 
         captor.value.onResponse(mockUser)
 
         verify(presenter.view).updateUserProfile(mockUser)
-    }
-
-    fun preparePresenter(): MainPagePresenter {
-        val presenter: MainPagePresenter = MainPagePresenter(userManager!!)
-        presenter.attachView(view!!)
-        return presenter
     }
 }

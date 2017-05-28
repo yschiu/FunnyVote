@@ -1,6 +1,7 @@
 package com.heaton.funnyvote.data.promotion;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.heaton.funnyvote.data.RemoteServiceApi;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -51,10 +53,25 @@ public class PromotionManager {
         this.executorService = Executors.newSingleThreadExecutor();
     }
 
+    public void getPromotionList(User user) {
+        if (user == null) {
+            Log.d(TAG, "getPromotionListResponseCallback onFailure: user is null");
+            executorService.execute(new LoadListDBRunnable(EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST
+                    , false, "user is null"));
+        } else {
+            remoteServiceApi.getPromotionList(0, PAGE_COUNT, user, new getPromotionListResponseCallback(0
+                    , EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST));
+        }
+    }
+
+    public Observable<List<Promotion>> getPromotions(@NonNull User user) {
+        return remoteServiceApi.getPromotionList(0, PAGE_COUNT, user, null);
+    }
+
     public class getPromotionListResponseCallback implements Callback<List<Promotion>> {
 
-        private String message;
 
+        private String message;
 
         public getPromotionListResponseCallback(int offset, String message) {
             this.message = message;
@@ -75,23 +92,12 @@ public class PromotionManager {
                 executorService.execute(new LoadListDBRunnable(message, false, errorMessage));
             }
         }
-
         @Override
         public void onFailure(Call<List<Promotion>> call, Throwable t) {
             Log.d(TAG, "getPromotionListResponseCallback onFailure:" + t.getMessage() + " MESSAGE:" + this.message);
             executorService.execute(new LoadListDBRunnable(message, false, t.getMessage()));
         }
-    }
 
-    public void getPromotionList(User user) {
-        if (user == null) {
-            Log.d(TAG, "getPromotionListResponseCallback onFailure: user is null");
-            executorService.execute(new LoadListDBRunnable(EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST
-                    , false, "user is null"));
-        } else {
-            remoteServiceApi.getPromotionList(0, PAGE_COUNT, user, new getPromotionListResponseCallback(0
-                    , EventBusManager.RemoteServiceEvent.GET_PROMOTION_LIST));
-        }
     }
 
     private class SaveAndLoadListDBRunnable implements Runnable {

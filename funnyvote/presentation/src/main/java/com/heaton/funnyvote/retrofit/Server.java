@@ -7,6 +7,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -168,10 +169,10 @@ public class Server {
     public interface PromotionService {
         @Headers({"x-api-key: " + API_KEY, "app-code: " + APP_CODE})
         @GET("api/promotion")
-        Call<List<Promotion>> getPromotionList(@Query("p") int pageNumber,
-                                               @Query("ps") int pageCount,
-                                               @Query("token") String token,
-                                               @Query("tokentype") String tokenType);
+        Observable<List<Promotion>> getPromotionList(@Query("p") int pageNumber,
+                                                     @Query("ps") int pageCount,
+                                                     @Query("token") String token,
+                                                     @Query("tokentype") String tokenType);
     }
 
     public static class UserDataQuery {

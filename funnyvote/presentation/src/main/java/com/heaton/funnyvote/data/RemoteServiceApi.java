@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -26,6 +27,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
@@ -120,6 +122,7 @@ public class RemoteServiceApi {
 
     public RemoteServiceApi() {
         retrofit = new Retrofit.Builder().baseUrl(Server.BASE_URL)
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         userService = retrofit.create(Server.UserService.class);
@@ -295,10 +298,10 @@ public class RemoteServiceApi {
         call.enqueue(callback);
     }
 
-    public void getPromotionList(int pageNumber, int pageCount, User user
+    public Observable<List<Promotion>> getPromotionList(int pageNumber, int pageCount, User user
             , PromotionManager.getPromotionListResponseCallback callback) {
-        Call<List<Promotion>> call = promotionService.getPromotionList(pageNumber + 1, pageCount, user.getUserCode()
-                , user.getTokenType());
-        call.enqueue(callback);
+        Observable<List<Promotion>> call = promotionService.getPromotionList(pageNumber + 1,
+                pageCount, user.getUserCode(), user.getTokenType());
+        return call;
     }
 }
